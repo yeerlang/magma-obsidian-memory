@@ -17,11 +17,22 @@
 
 [中文文档](README.zh-CN.md) | [Paper](docs/paper/architecture.md) | [API](docs/api.md)
 
-**MAGMA gives your AI agent a persistent, four-dimensional memory that actually works.** Unlike flat vector search that throws chunks at every query, MAGMA stores experience across four interconnected graphs — temporal, causal, semantic, and entity — then retrieves by *traversing relationships*, not just matching embeddings. The result: your agent remembers context, traces cause and effect, and builds a knowledge graph you can actually inspect and correct.
+**MAGMA gives your AI agent a persistent, four-dimensional memory that actually works.** MAGMA stands for **M**ulti-**A**gentic **G**raph-based **M**emory — unlike flat vector search that throws chunks at every query, MAGMA stores experience across four interconnected graphs — temporal, causal, semantic, and entity — then retrieves by *traversing relationships*, not just matching embeddings. The result: your agent remembers context, traces cause and effect, and builds a knowledge graph you can actually inspect and correct.
 
 Pair it with Obsidian and you get a human-auditable memory dashboard — every inferred edge can be reviewed, confirmed, or rejected. Powered by the [MAGMA paper](https://arxiv.org/abs/2601.03236) (arXiv 2601.03236), implemented as a single `docker compose up` + MCP server that plugs into Hermes, Claude, Cursor, Cline, Windsurf, Continue, and anything else that speaks MCP.
 
 |**Your agent. Your data. Your rules.** Embeddings stay local. LLM calls only when you configure them. No lock-in, no black box.
+
+## What Makes MAGMA Different
+
+| | Plain RAG | LangChain Memory | Mem0 | **MAGMA** |
+|---|---|---|---|---|
+| **Storage** | Flat chunks | Key-value store | Flat events | **4 relational graphs** |
+| **Retrieval** | cos(v_q, v_doc) | Last N messages | cos similarity | **RRF fusion + beam search** |
+| **Relations** | None | Chronological only | None | **Temporal/Causal/Semantic/Entity** |
+| **Consolidation** | None | None | None | **LLM slow path infers structure** |
+| **Human review** | None | None | None | **Obsidian vault for audit** |
+| **MCP native** | ❌ | ❌ | ❌ | **✅ stdio server** |
 
 ## Architecture
 
@@ -32,17 +43,6 @@ MAGMA is based on [arXiv 2601.03236](https://arxiv.org/abs/2601.03236) — a mul
 </p>
 
 > **Three-Layer Design**: Query Process (top) — intent classification → RRF fusion → beam search → linearization. **Data Structure** (middle) — GraphDB stores four edge types (Temporal/Causal/Semantic/Entity), VectorDB indexes embeddings. **Memory Evolution** (bottom) — Fast Path writes events instantly; Slow Path uses LLM to infer causal and entity structure in background.
-
-### What makes MAGMA different
-
-| | Plain RAG | LangChain Memory | Mem0 | **MAGMA** |
-|---|---|---|---|---|
-| **Storage** | Flat chunks | Key-value store | Flat events | **4 relational graphs** |
-| **Retrieval** | cos(v_q, v_doc) | Last N messages | cos similarity | **RRF fusion + beam search** |
-| **Relations** | None | Chronological only | None | **Temporal/Causal/Semantic/Entity** |
-| **Consolidation** | None | None | None | **LLM slow path infers structure** |
-| **Human review** | None | None | None | **Obsidian vault for audit** |
-| **MCP native** | ❌ | ❌ | ❌ | **✅ stdio server** |
 
 ### 4-Stage Query Pipeline
 
