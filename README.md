@@ -17,7 +17,7 @@
 
 [English](README.en.md) | [论文文档](docs/paper/architecture.md) | [API](docs/api.md)
 
-|**MAGMA 给你的 AI Agent 装上真正的四维记忆。** MAGMA 全称 **M**ulti-**A**gentic **G**raph-based **M**emory（多智能体图基记忆）—— 不是向量搜索那种"把文本块甩给每次查询"的扁平匹配——MAGMA 把经验存进四张互联的关系图（时序、因果、语义、实体），检索时走的是*关系遍历*而非向量相似度。结果：你的 Agent 记得上下文、追溯因果链、构建可审查的知识图谱。
+|**MAGMA 给你的 AI Agent 装上真正的四维记忆。** MAGMA 全称 **M**ulti-**G**raph based **A**gentic **M**emory **A**rchitecture（多图基智能体记忆架构）—— 不是向量搜索那种"把文本块甩给每次查询"的扁平匹配——MAGMA 把经验存进四张互联的关系图（时序、因果、语义、实体），检索时走的是*关系遍历*而非向量相似度。结果：你的 Agent 记得上下文、追溯因果链、构建可审查的知识图谱。
 
 配合 Obsidian，你得到一个人可审计的记忆仪表盘——LLM 推断的每条边都能审查、确认或驳回。基于 [MAGMA 论文](https://arxiv.org/abs/2601.03236) (arXiv 2601.03236)，一条 `docker compose up` 启动，MCP 协议直连 Hermes、Claude、Cursor、Cline、Windsurf、Continue 等所有主流 Agent。
 
