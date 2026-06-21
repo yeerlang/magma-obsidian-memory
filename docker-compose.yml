@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  magma:
+    build: .
+    ports:
+      - "8765:8765"
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.deepseek.com}
+      - LLM_MODEL=${LLM_MODEL:-deepseek-chat}
+      - HF_HUB_OFFLINE=${HF_HUB_OFFLINE:-0}
+      - OBSIDIAN_VAULT_PATH=${OBSIDIAN_VAULT_PATH:-}
+    volumes:
+      - ./data:/app/data
+      # Mount your Obsidian vault for wiki-ingest (optional)
+      # - /path/to/your/vault:/obsidian
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8765/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

@@ -1,0 +1,13 @@
+# MAGMA MCP Server Configuration for Hermes Agent
+# Copy this into your ~/.hermes/config.yaml under mcp_servers:
+
+# mcp_servers:
+#   magma:
+#     command: "python"
+#     args: ["/path/to/magma-obsidian-memory/mcp_magma_server.py"]
+#     timeout: 60
+#     connect_timeout: 30
+
+# After adding, run:
+#   hermes mcp reload
+# Tools will appear as: magma_add_event, magma_query, magma_stats, etc.
