@@ -1,101 +1,101 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="MAGMA × Obsidian" width="100%">
+  <img src="assets/banner-zh.svg" alt="MAGMA × Obsidian" width="100%">
 </p>
 
 <p align="center">
   <a href="https://github.com/yeerlang/magma-obsidian-memory/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="https://arxiv.org/abs/2601.03236"><img src="https://img.shields.io/badge/Paper-arXiv%202601.03236-B31B1B.svg" alt="arXiv"></a>
-  <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/中文-README-red.svg" alt="中文文档"></a>
+  <a href="README.en.md"><img src="https://img.shields.io/badge/English-README-blue.svg" alt="English"></a>
   <a href="https://github.com/yeerlang/magma-obsidian-memory"><img src="https://img.shields.io/badge/MCP-Compatible-7c3aed.svg" alt="MCP Compatible"></a>
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-stdio-FF6B6B.svg" alt="MCP stdio"></a>
 </p>
 
-# MAGMA × Obsidian Memory
+# MAGMA × Obsidian 记忆引擎
 
-> Your agent forgets everything between sessions. Fix that.
+> 你的 Agent 每次会话结束就失忆。修好它。
 
-[中文文档](README.zh-CN.md) | [Paper](docs/paper/architecture.md) | [API](docs/api.md)
+[English](README.en.md) | [论文文档](docs/paper/architecture.md) | [API](docs/api.md)
 
-**MAGMA gives your AI agent a persistent, four-dimensional memory that actually works.** MAGMA stands for **M**ulti-**A**gentic **G**raph-based **M**emory — unlike flat vector search that throws chunks at every query, MAGMA stores experience across four interconnected graphs — temporal, causal, semantic, and entity — then retrieves by *traversing relationships*, not just matching embeddings. The result: your agent remembers context, traces cause and effect, and builds a knowledge graph you can actually inspect and correct.
+|**MAGMA 给你的 AI Agent 装上真正的四维记忆。** MAGMA 全称 **M**ulti-**A**gentic **G**raph-based **M**emory（多智能体图基记忆）—— 不是向量搜索那种"把文本块甩给每次查询"的扁平匹配——MAGMA 把经验存进四张互联的关系图（时序、因果、语义、实体），检索时走的是*关系遍历*而非向量相似度。结果：你的 Agent 记得上下文、追溯因果链、构建可审查的知识图谱。
 
-Pair it with Obsidian and you get a human-auditable memory dashboard — every inferred edge can be reviewed, confirmed, or rejected. Powered by the [MAGMA paper](https://arxiv.org/abs/2601.03236) (arXiv 2601.03236), implemented as a single `docker compose up` + MCP server that plugs into Hermes, Claude, Cursor, Cline, Windsurf, Continue, and anything else that speaks MCP.
+配合 Obsidian，你得到一个人可审计的记忆仪表盘——LLM 推断的每条边都能审查、确认或驳回。基于 [MAGMA 论文](https://arxiv.org/abs/2601.03236) (arXiv 2601.03236)，一条 `docker compose up` 启动，MCP 协议直连 Hermes、Claude、Cursor、Cline、Windsurf、Continue 等所有主流 Agent。
 
-|**Your agent. Your data. Your rules.** Embeddings stay local. LLM calls only when you configure them. No lock-in, no black box.
+|**你的 Agent，你的数据，你的规则。** 嵌入向量本地生成，LLM 调用按需配置，无锁定，无黑箱。
 
-## What Makes MAGMA Different
+## MAGMA 的差异优势
 
-| | Plain RAG | LangChain Memory | Mem0 | **MAGMA** |
+| | 纯 RAG | LangChain Memory | Mem0 | **MAGMA** |
 |---|---|---|---|---|
-| **Storage** | Flat chunks | Key-value store | Flat events | **4 relational graphs** |
-| **Retrieval** | cos(v_q, v_doc) | Last N messages | cos similarity | **RRF fusion + beam search** |
-| **Relations** | None | Chronological only | None | **Temporal/Causal/Semantic/Entity** |
-| **Consolidation** | None | None | None | **LLM slow path infers structure** |
-| **Human review** | None | None | None | **Obsidian vault for audit** |
-| **MCP native** | ❌ | ❌ | ❌ | **✅ stdio server** |
+| **存储** | 扁平文本块 | 键值存储 | 扁平事件 | **四张关系图** |
+| **检索** | cos(v_q, v_doc) | 最近 N 条消息 | cos 相似度 | **RRF 多信号融合 + 图遍历** |
+| **关系** | 无 | 仅时序 | 无 | **时序/因果/语义/实体** |
+| **整合** | 无 | 无 | 无 | **LLM 慢路径推断结构** |
+| **人审** | 无 | 无 | 无 | **Obsidian 审查/编辑** |
+| **MCP 原生** | ❌ | ❌ | ❌ | **✅ stdio 服务** |
 
-## Architecture
+## 架构
 
-MAGMA is based on [arXiv 2601.03236](https://arxiv.org/abs/2601.03236) — a multi-graph agentic memory architecture that diverges from vector-only RAG:
-
-<p align="center">
-  <img src="assets/magma-architecture.png" alt="MAGMA Architecture" width="100%">
-</p>
-
-> **Three-Layer Design**: Query Process (top) — intent classification → RRF fusion → beam search → linearization. **Data Structure** (middle) — GraphDB stores four edge types (Temporal/Causal/Semantic/Entity), VectorDB indexes embeddings. **Memory Evolution** (bottom) — Fast Path writes events instantly; Slow Path uses LLM to infer causal and entity structure in background.
-
-### 4-Stage Query Pipeline
+MAGMA 基于 [arXiv 2601.03236](https://arxiv.org/abs/2601.03236) 论文，是与纯向量 RAG 完全不同的多图记忆架构：
 
 <p align="center">
-  <img src="assets/query-pipeline.png" alt="Query Pipeline" width="100%">
+  <img src="assets/magma-architecture.png" alt="MAGMA 三层架构图" width="100%">
 </p>
 
-> **(1) Intent** detects WHY/WHEN/WHAT/ENTITY → **(2) RRF** merges vector + keyword + time signals → **(3) Beam Search** traverses with intent-weighted edge priorities → **(4) Linearization** topologically sorts with token budgeting.
+> **三层设计**：上层 **查询流程** — 意图分类 → RRF 多信号融合 → Beam Search 图遍历 → 线性化输出。中层 **数据结构** — GraphDB 存储四类边（时序/因果/语义/实体），VectorDB 索引嵌入向量。底层 **记忆演化** — 快路径即时写入事件；慢路径后台用 LLM 推断因果与实体结构。
 
-## Why MAGMA?
+### 四阶段查询流水线
 
-**"Won't hallucinations compound?"** — Every edge is tagged with provenance. The Obsidian integration lets you review and correct LLM-inferred relations before they become permanent. Causal edges go through a human-confirmation review queue.
+<p align="center">
+  <img src="assets/query-pipeline.png" alt="查询流水线" width="100%">
+</p>
 
-**"Does it scale past 1000 events?"** — Beam search with budget control (`budget=30`) keeps retrieval bounded regardless of graph size. RRF fusion ensures signal quality doesn't degrade as the graph grows.
+> **(1) 意图分类** 识别 WHY/WHEN/WHAT/ENTITY → **(2) RRF 多信号融合** 合并向量 + 关键词 + 时间过滤 → **(3) Beam Search** 按意图加权边优先级遍历图谱 → **(4) 线性化** 拓扑排序 + token 预算截断。
 
-**"Do I need an API key?"** — Fast Path (write + query) works completely offline with local embeddings. Only the Slow Path (causal/entity inference) needs an LLM. Use any OpenAI-compatible endpoint.
+## 为什么选择 MAGMA？
 
-**"Is this just another vector database?"** — No. Vector search is only one of three RRF signals (alongside keyword match and time filtering). The graph traversal step (Beam Search with intent-weighted edges) is what makes retrieval relational rather than flat.
+**"幻觉不会累积吗？"** — 每条边都标注了来源。Obsidian 集成让你在 LLM 推断的关系固化前审查修正。因果边经过人工确认审查队列。
 
-## Quick Start
+**"事件超过 1000 条会崩吗？"** — Beam Search 带预算控制（`budget=30`），检索开销不随图规模线性增长。RRF 融合确保信噪比不退化。
+
+**"需要 API key 吗？"** — 快路径（写入 + 查询）完全离线，使用本地 embedding。只有慢路径（因果/实体推断）需要 LLM。任意 OpenAI 兼容端点均可。
+
+**"这跟向量数据库有什么区别？"** — 本质不同。向量搜索只是 RRF 三条信号源之一（另两条：关键词匹配、时间过滤）。图遍历步骤（意图加权的 Beam Search）才是让检索从"扁平匹配"变为"关系推理"的关键。
+
+## 快速开始
 
 ```bash
 git clone https://github.com/yeerlang/magma-obsidian-memory.git
 cd magma-obsidian-memory
 cp .env.example .env
-# Edit .env with your LLM API key
+# 编辑 .env 填入 LLM API key
 
 docker compose up
 # API: http://localhost:8765
-# Health: http://localhost:8765/health
+# 健康检查: http://localhost:8765/health
 ```
 
-### Without Docker
+### 不用 Docker
 
 ```bash
 pip install -r requirements.txt
 python -m uvicorn app:app --host 0.0.0.0 --port 8765
 ```
 
-### Test it
+### 跑测试
 
 ```bash
 python test_api.py
-# 8 tests: health → write events → query → semantic edges → stats → save
+# 8 项测试：健康检查 → 写事件 → 查询 → 语义边 → 统计 → 持久化
 ```
 
-## Connect Your Agent
+## 接入你的 Agent
 
-MAGMA speaks standard MCP stdio protocol — works with any MCP-compatible agent.
+MAGMA 使用标准 MCP stdio 协议，兼容所有支持 MCP 的 AI Agent。
 
 ### Hermes Agent
 
-Add to `~/.hermes/config.yaml`:
+在 `~/.hermes/config.yaml` 中添加：
 
 ```yaml
 mcp_servers:
@@ -105,11 +105,11 @@ mcp_servers:
     timeout: 60
 ```
 
-`hermes mcp reload` — tools appear as `magma_add_event`, `magma_query`, etc.
+`hermes mcp reload`，工具以 `magma_add_event`、`magma_query` 等形式出现。
 
 ### Claude Desktop / Claude Code
 
-`~/.config/claude/claude_desktop_config.json`:
+`~/.config/claude/claude_desktop_config.json`：
 
 ```json
 {"mcpServers": {"magma": {"command": "python", "args": ["/path/to/magma-obsidian-memory/mcp_magma_server.py"]}}}
@@ -117,15 +117,15 @@ mcp_servers:
 
 ### Cursor
 
-`.cursor/mcp.json` in project root:
+项目根目录 `.cursor/mcp.json`：
 
 ```json
 {"mcpServers": {"magma": {"command": "python", "args": ["/path/to/magma-obsidian-memory/mcp_magma_server.py"]}}}
 ```
 
-### Cline (VS Code)
+### Cline（VS Code）
 
-Cline settings → MCP Servers → Add:
+Cline 设置 → MCP Servers → 添加：
 
 ```json
 {"mcpServers": {"magma": {"command": "python", "args": ["/path/to/magma-obsidian-memory/mcp_magma_server.py"], "disabled": false, "alwaysAllow": ["magma_add_event", "magma_query", "magma_stats"]}}}
@@ -133,15 +133,15 @@ Cline settings → MCP Servers → Add:
 
 ### Windsurf
 
-`.windsurf/mcp.json`:
+`.windsurf/mcp.json`：
 
 ```json
 {"mcpServers": {"magma": {"command": "python", "args": ["/path/to/magma-obsidian-memory/mcp_magma_server.py"]}}}
 ```
 
-### Continue (VS Code / JetBrains)
+### Continue（VS Code / JetBrains）
 
-`~/.continue/config.json`:
+`~/.continue/config.json`：
 
 ```json
 {"experimental": {"mcpServers": {"magma": {"command": "python", "args": ["/path/to/magma-obsidian-memory/mcp_magma_server.py"]}}}}
@@ -149,117 +149,117 @@ Cline settings → MCP Servers → Add:
 
 ### OpenCode / Codex / Aider / Goose
 
-All support MCP stdio. Use the same pattern: `{"command": "python", "args": ["/path/to/mcp_magma_server.py"]}` in their respective MCP config files.
+均支持 MCP stdio。在上述工具的 MCP 配置中使用相同格式：`{"command": "python", "args": ["/path/to/mcp_magma_server.py"]}`。
 
-### Any Agent (REST API)
+### 任意 Agent（REST API）
 
-Agents without MCP can use the REST API directly:
+不支持 MCP 的 Agent 可直接调 REST API：
 
 ```python
 import requests
-r = requests.post("http://localhost:8765/events", json={"content": "User prefers dark mode"})
-r = requests.post("http://localhost:8765/query", json={"query": "dark mode"})
+r = requests.post("http://localhost:8765/events", json={"content": "用户偏好深色主题"})
+r = requests.post("http://localhost:8765/query", json={"query": "深色主题"})
 ```
 
-Full API reference: [docs/api.md](docs/api.md)
+完整 API 文档：[docs/api.md](docs/api.md)
 
-## Obsidian Integration (Optional)
+## Obsidian 集成（可选）
 
-Configure your vault path in `.env`:
+在 `.env` 中配置 vault 路径：
 
 ```env
 OBSIDIAN_VAULT_PATH=/path/to/your/obsidian/vault
 ```
 
-Four integration scripts:
+四合一脚本：
 
-| Script | Purpose |
-|---|---|
-| `obsidian-integration/scripts/dashboard.py` | Live MAGMA stats → Obsidian page |
-| `obsidian-integration/scripts/ingest.py` | Wiki pages → MAGMA entity nodes |
-| `obsidian-integration/scripts/review.py` | LLM-inferred edges → human review notes |
-| `obsidian-integration/scripts/export.py` | MAGMA graph → Obsidian wikilinks + Graph View |
+| 脚本 | 用途 |
+|------|------|
+| `obsidian-integration/scripts/dashboard.py` | 实时 MAGMA 统计 → Obsidian 页面 |
+| `obsidian-integration/scripts/ingest.py` | Wiki 页面 → MAGMA 实体节点 |
+| `obsidian-integration/scripts/review.py` | LLM 推断的边 → 人工审查笔记 |
+| `obsidian-integration/scripts/export.py` | MAGMA 图谱 → Obsidian wikilinks + Graph View |
 
-See [obsidian-integration/HOWTO.md](obsidian-integration/HOWTO.md) for setup.
+详见 [obsidian-integration/HOWTO.md](obsidian-integration/HOWTO.md)。
 
-## Privacy & Data Flow
+## 隐私与数据流
 
-MAGMA processes your data locally by default:
+MAGMA 默认本地处理你的数据：
 
-- **Embeddings**: Generated locally via `sentence-transformers` (all-MiniLM-L6-v2). Never sent to external APIs.
-- **Graph storage**: In-memory (GraphDB + VectorDB). Persist to JSON with `POST /save`.
-- **LLM calls**: Only the Slow Path (causal/entity inference) calls your configured LLM. Fast Path and queries are fully local.
-- **API keys**: Stored in local `.env`. Never logged or transmitted.
-- **Obsidian vault**: Read-only from configured `OBSIDIAN_VAULT_PATH`. Writes only to `magma/` subdirectory.
+- **嵌入向量**：本地生成，使用 `sentence-transformers`（all-MiniLM-L6-v2），绝不外传。
+- **图存储**：内存中（GraphDB + VectorDB），可通过 `POST /save` 持久化为 JSON。
+- **LLM 调用**：仅慢路径（因果/实体推断）调用你配置的 LLM。快路径和查询完全本地。
+- **API Key**：存储于本地 `.env`，不会被记录或传输。
+- **Obsidian vault**：只读你配置的 `OBSIDIAN_VAULT_PATH`，仅在 `magma/` 子目录下写入。
 
-When no LLM is configured, MAGMA runs entirely offline — write events, search vectors, traverse the graph, all local.
+当不配置 LLM 时，MAGMA 完全离线运行——写入事件、搜索向量、遍历图谱，全部本地。
 
-## Paper Documentation
+## 论文文档
 
-MAGMA's implementation is mapped line-by-line to the original paper:
+MAGMA 的实现与原论文逐行对齐：
 
-| Document | Content |
-|---|---|
-| **[architecture.md](docs/paper/architecture.md)** | System architecture with annotated diagrams |
-| **[formula-mapping.md](docs/paper/formula-mapping.md)** | Every formula → code location |
-| **[algorithms.md](docs/paper/algorithms.md)** | All 3 algorithms with Chinese annotations |
-| **[paper.pdf](docs/paper/paper.pdf)** | Full paper (arXiv 2601.03236) |
+| 文档 | 内容 |
+|------|------|
+| **[architecture.md](docs/paper/architecture.md)** | 系统架构 + 中文注释 + 原图 |
+| **[formula-mapping.md](docs/paper/formula-mapping.md)** | 每个公式 → 代码位置 |
+| **[algorithms.md](docs/paper/algorithms.md)** | 三组算法中文注释 |
+| **[paper.pdf](docs/paper/paper.pdf)** | 完整论文 (arXiv 2601.03236) |
 
-## API Endpoints
+## API 端点
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/health` | Health check |
-| `POST` | `/events` | Write event (Fast Path) |
-| `POST` | `/events/segmented` | Auto-segment long text → batch write |
-| `GET` | `/events` | List events (paginated) |
-| `GET` | `/events/{id}` | Get single event |
-| `POST` | `/events/{id}/infer` | Trigger Slow Path inference |
-| `POST` | `/query` | 4-stage query |
-| `POST` | `/events/semantic-edges` | Build semantic similarity edges |
-| `GET` | `/stats` | Engine statistics |
-| `POST` | `/save` | Persist to JSON |
-| `POST` | `/load` | Load from JSON |
+| 方法 | 路径 | 用途 |
+|------|------|------|
+| `GET` | `/health` | 健康检查 |
+| `POST` | `/events` | 写入事件（快路径） |
+| `POST` | `/events/segmented` | 长文本自动分段批量写入 |
+| `GET` | `/events` | 列出事件（分页） |
+| `GET` | `/events/{id}` | 获取单个事件 |
+| `POST` | `/events/{id}/infer` | 触发慢路径推断 |
+| `POST` | `/query` | 四阶段查询 |
+| `POST` | `/events/semantic-edges` | 构建语义边 |
+| `GET` | `/stats` | 引擎统计 |
+| `POST` | `/save` | 持久化到 JSON |
+| `POST` | `/load` | 从 JSON 加载 |
 
-## MCP Tools
+## MCP 工具
 
-| Tool | Description |
-|---|---|
-| `magma_add_event` | Write an event to memory |
-| `magma_query` | 4-stage retrieval query |
-| `magma_stats` | Memory statistics |
-| `magma_build_semantic_edges` | Build semantic similarity edges |
-| `magma_get_recent` | Get recent events |
+| 工具 | 说明 |
+|------|------|
+| `magma_add_event` | 写入事件到记忆 |
+| `magma_query` | 四阶段检索 |
+| `magma_stats` | 记忆统计 |
+| `magma_build_semantic_edges` | 构建语义相似边 |
+| `magma_get_recent` | 获取最近事件 |
 
-## Configuration
+## 配置
 
-All configuration via `.env`:
+全部通过 `.env` 配置：
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `LLM_API_KEY` | For Slow Path | — | Your LLM API key (OpenAI-compatible) |
-| `LLM_BASE_URL` | No | `https://api.deepseek.com` | LLM API base URL |
-| `LLM_MODEL` | No | `deepseek-chat` | Model name |
-| `OBSIDIAN_VAULT_PATH` | No | — | Path to Obsidian vault |
-| `HF_HUB_OFFLINE` | No | `0` | Set to `1` if HF is unreachable |
+| 变量 | 必需 | 默认值 | 说明 |
+|------|------|--------|------|
+| `LLM_API_KEY` | 慢路径需要 | — | LLM API key（OpenAI 兼容） |
+| `LLM_BASE_URL` | 否 | `https://api.deepseek.com` | LLM API 地址 |
+| `LLM_MODEL` | 否 | `deepseek-chat` | 模型名 |
+| `OBSIDIAN_VAULT_PATH` | 否 | — | Obsidian vault 路径 |
+| `HF_HUB_OFFLINE` | 否 | `0` | 设为 `1` 如果 HF 不可达 |
 
-## Contributing
+## 参与贡献
 
 ```bash
 git clone https://github.com/yeerlang/magma-obsidian-memory.git
 cd magma-obsidian-memory
 pip install -r requirements.txt
 
-# Run tests
+# 跑测试
 python test_api.py
 
-# Start dev server
+# 启动开发服务器
 python -m uvicorn app:app --host 0.0.0.0 --port 8765 --reload
 ```
 
-PRs welcome. See [issues](https://github.com/yeerlang/magma-obsidian-memory/issues) for open tasks.
+欢迎提 PR。待办任务见 [issues](https://github.com/yeerlang/magma-obsidian-memory/issues)。
 
-## Project Structure
+## 项目结构
 
 ```
 magma-obsidian-memory/
@@ -267,26 +267,26 @@ magma-obsidian-memory/
 ├── .env.example / .gitignore / LICENSE
 ├── docker-compose.yml / Dockerfile
 ├── requirements.txt
-├── assets/                   # Banner + branding
+├── assets/                   # Banner + 品牌素材
 ├── app.py                    # FastAPI (:8765)
-├── mcp_magma_server.py       # MCP stdio server
-├── test_api.py               # Integration tests
-├── memory/                   # Core engine
-│   ├── graph_db.py           # 4-graph storage
-│   ├── vector_db.py          # Vector index
-│   ├── trg_memory.py         # Fast/Slow path engine
-│   └── query_engine.py       # 4-stage retrieval
+├── mcp_magma_server.py       # MCP stdio 服务
+├── test_api.py               # 集成测试
+├── memory/                   # 核心引擎
+│   ├── graph_db.py           # 四图存储
+│   ├── vector_db.py          # 向量索引
+│   ├── trg_memory.py         # 快/慢路径引擎
+│   └── query_engine.py       # 四阶段检索
 ├── docs/
 │   ├── api.md / setup.md
-│   └── paper/                # Paper docs + figures
-├── obsidian-integration/     # Obsidian bridge
-└── integrations/hermes/      # Hermes MCP config
+│   └── paper/                # 论文文档 + 原图
+├── obsidian-integration/     # Obsidian 桥接
+└── integrations/hermes/      # Hermes MCP 配置
 ```
 
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=yeerlang/magma-obsidian-memory&type=Date)](https://star-history.com/#yeerlang/magma-obsidian-memory&Date)
 
-## License
+## 许可证
 
-MIT — see [LICENSE](LICENSE).
+MIT — 详见 [LICENSE](LICENSE)。
