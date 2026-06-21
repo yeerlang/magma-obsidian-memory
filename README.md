@@ -17,9 +17,11 @@
 
 [English](README.en.md) | [论文文档](docs/paper/architecture.md) | [API](docs/api.md)
 
-|**MAGMA 给你的 AI Agent 装上真正的四维记忆。** MAGMA 全称 **M**ulti-**G**raph based **A**gentic **M**emory **A**rchitecture（多图基智能体记忆架构）—— 不是向量搜索那种"把文本块甩给每次查询"的扁平匹配——MAGMA 把经验存进四张互联的关系图（时序、因果、语义、实体），检索时走的是*关系遍历*而非向量相似度。结果：你的 Agent 记得上下文、追溯因果链、构建可审查的知识图谱。
+|**MAGMA 给你的 AI Agent 装上四维记忆，通过 Obsidian 实现人可审计的知识演化。** MAGMA 全称 **M**ulti-**G**raph based **A**gentic **M**emory **A**rchitecture（多图基智能体记忆架构）—— 不是向量搜索那种"把文本块甩给每次查询"的扁平匹配——MAGMA 把经验存进四张互联的关系图（时序、因果、语义、实体），检索时走的是*关系遍历*而非向量相似度。
 
-配合 Obsidian，你得到一个人可审计的记忆仪表盘——LLM 推断的每条边都能审查、确认或驳回。基于 [MAGMA 论文](https://arxiv.org/abs/2601.03236) (arXiv 2601.03236)，一条 `docker compose up` 启动，MCP 协议直连 Hermes、Claude、Cursor、Cline、Windsurf、Continue 等所有主流 Agent。
+|**Obsidian 是 MAGMA 的人机协作界面。** LLM 慢路径推断的每条因果边、实体关系都会进入 Obsidian 审查队列——你可以逐条确认、修正或驳回。MAGMA 图谱可导出为 Obsidian Graph View 可视化，Wiki 页面与实体节点双向同步。Agent 的记忆不再是不透明的黑箱，而是你可以随时翻阅、编辑的知识库。|
+
+|基于 [MAGMA 论文](https://arxiv.org/abs/2601.03236) (arXiv 2601.03236)，一条 `docker compose up` 启动，MCP 协议直连 Hermes、Claude、Cursor、Cline、Windsurf、Continue 等所有主流 Agent。
 
 |**你的 Agent，你的数据，你的规则。** 嵌入向量本地生成，LLM 调用按需配置，无锁定，无黑箱。
 
@@ -33,6 +35,40 @@
 | **整合** | 无 | 无 | 无 | **LLM 慢路径推断结构** |
 | **人审** | 无 | 无 | 无 | **Obsidian 审查/编辑** |
 | **MCP 原生** | ❌ | ❌ | ❌ | **✅ stdio 服务** |
+
+## Obsidian 审查工作流
+
+MAGMA 区别于所有纯向量记忆方案的核心：**慢路径推理结果必须经过人工审查才固化入图**，而 Obsidian 是唯一的人机审查界面。
+
+```
+事件写入 ──→ 快路径 ──→ 存入图谱（时序/语义边自动创建）
+                │
+                ▼
+          慢路径后台队列
+                │
+                ▼
+         LLM 推断因果/实体关系
+                │
+                ▼
+    ┌── Obsidian 审查队列 ──┐
+    │  逐条展示推断结果       │
+    │  ✅ 确认 → 固化入图     │
+    │  ✏️ 修正 → 重新写入     │
+    │  ❌ 驳回 → 丢弃        │
+    └──────────────────────┘
+                │
+                ▼
+    Obsidian Graph View 可视化
+```
+
+| 审查维度 | 说明 |
+|----------|------|
+| **因果边** | LLM 推断的 LEADS_TO / BECAUSE_OF / ENABLES / PREVENTS 关系 → 人工确认后生效 |
+| **实体边** | LLM 提取的 REFERS_TO / MENTIONED_IN 关联 → 人工修正实体名和关系 |
+| **语义边** | 自动创建（cos 相似度 > 阈值），可在 Obsidian 中查看和删除 |
+| **图谱导出** | 完整 MAGMA 图谱 → Obsidian wikilinks + Graph View 交互式浏览 |
+
+> **为什么必须有 Obsidian？** 没有审查的 AI 记忆 = 幻觉永久化。Mem0、LangChain Memory 的 LLM 推断结果直接入库，错了就永远错了。MAGMA 的 Obsidian 审查队列确保你的知识库永远是经过人工验证的。
 
 ## 架构
 
@@ -163,15 +199,15 @@ r = requests.post("http://localhost:8765/query", json={"query": "深色主题"})
 
 完整 API 文档：[docs/api.md](docs/api.md)
 
-## Obsidian 集成（可选）
+## Obsidian 集成脚本
 
-在 `.env` 中配置 vault 路径：
+在 `.env` 中配置你的 Obsidian Vault 路径即可启用审查工作流：
 
 ```env
 OBSIDIAN_VAULT_PATH=/path/to/your/obsidian/vault
 ```
 
-四合一脚本：
+四合一运维脚本：
 
 | 脚本 | 用途 |
 |------|------|
