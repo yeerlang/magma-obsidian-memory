@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="MAGMA × Obsidian" width="100%">
+  <img src="assets/banner.svg" alt="MAGMA × Obsidian" width="100%">
 </p>
 
 <p align="center">
