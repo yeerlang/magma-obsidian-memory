@@ -17,9 +17,11 @@
 
 [中文文档](README.md) | [Paper](docs/paper/architecture.md) | [API](docs/api.md)
 
-**MAGMA gives your AI agent a persistent, four-dimensional memory that actually works.** MAGMA stands for **M**ulti-**G**raph based **A**gentic **M**emory **A**rchitecture — unlike flat vector search that throws chunks at every query, MAGMA stores experience across four interconnected graphs — temporal, causal, semantic, and entity — then retrieves by *traversing relationships*, not just matching embeddings. The result: your agent remembers context, traces cause and effect, and builds a knowledge graph you can actually inspect and correct.
+**MAGMA gives your AI agent four-dimensional memory with human-auditable knowledge evolution via Obsidian.** MAGMA stands for **M**ulti-**G**raph based **A**gentic **M**emory **A**rchitecture — unlike flat vector search that throws chunks at every query, MAGMA stores experience across four interconnected graphs — temporal, causal, semantic, and entity — then retrieves by *traversing relationships*, not just matching embeddings.
 
-Pair it with Obsidian and you get a human-auditable memory dashboard — every inferred edge can be reviewed, confirmed, or rejected. Powered by the [MAGMA paper](https://arxiv.org/abs/2601.03236) (arXiv 2601.03236), implemented as a single `docker compose up` + MCP server that plugs into Hermes, Claude, Cursor, Cline, Windsurf, Continue, and anything else that speaks MCP.
+**Obsidian is MAGMA's human-in-the-loop interface.** Every causal edge and entity relation inferred by the LLM slow path enters an Obsidian review queue — confirm, correct, or reject each one. Export the full MAGMA graph as Obsidian wikilinks and browse it interactively in Graph View. Wiki pages sync bidirectionally with entity nodes. Your agent's memory stops being a black box and becomes a knowledge base you can read, edit, and trust.
+
+Powered by the [MAGMA paper](https://arxiv.org/abs/2601.03236) (arXiv 2601.03236), implemented as a single `docker compose up` + MCP server that plugs into Hermes, Claude, Cursor, Cline, Windsurf, Continue, and anything else that speaks MCP.
 
 |**Your agent. Your data. Your rules.** Embeddings stay local. LLM calls only when you configure them. No lock-in, no black box.
 
@@ -33,6 +35,40 @@ Pair it with Obsidian and you get a human-auditable memory dashboard — every i
 | **Consolidation** | None | None | None | **LLM slow path infers structure** |
 | **Human review** | None | None | None | **Obsidian vault for audit** |
 | **MCP native** | ❌ | ❌ | ❌ | **✅ stdio server** |
+
+## Obsidian Review Workflow
+
+What sets MAGMA apart from every vector-only memory solution: **slow-path inferences must pass human review before being committed to the graph**, and Obsidian is the interface for that review.
+
+```
+Event Write ──→ Fast Path ──→ Store in Graph (temporal/semantic edges auto-created)
+                    │
+                    ▼
+           Slow Path Background Queue
+                    │
+                    ▼
+         LLM Infers Causal/Entity Relations
+                    │
+                    ▼
+    ┌── Obsidian Review Queue ──┐
+    │  Review each inference     │
+    │  ✅ Confirm → commit       │
+    │  ✏️ Correct → rewrite      │
+    │  ❌ Reject → discard       │
+    └───────────────────────────┘
+                    │
+                    ▼
+    Obsidian Graph View Visualization
+```
+
+| Review Dimension | Description |
+|------------------|-------------|
+| **Causal Edges** | LLM-inferred LEADS_TO / BECAUSE_OF / ENABLES / PREVENTS → human-confirmed before activation |
+| **Entity Edges** | LLM-extracted REFERS_TO / MENTIONED_IN → human-corrected entity names and relations |
+| **Semantic Edges** | Auto-created (cos similarity > threshold), viewable and removable in Obsidian |
+| **Graph Export** | Full MAGMA graph → Obsidian wikilinks + interactive Graph View browsing |
+
+> **Why Obsidian is essential:** AI memory without review = permanent hallucination. Mem0 and LangChain Memory commit LLM inferences directly — wrong once, wrong forever. MAGMA's Obsidian review queue ensures your knowledge base is always human-verified.
 
 ## Architecture
 
@@ -163,15 +199,15 @@ r = requests.post("http://localhost:8765/query", json={"query": "dark mode"})
 
 Full API reference: [docs/api.md](docs/api.md)
 
-## Obsidian Integration (Optional)
+## Obsidian Integration Scripts
 
-Configure your vault path in `.env`:
+Configure your Obsidian vault path in `.env` to enable the review workflow:
 
 ```env
 OBSIDIAN_VAULT_PATH=/path/to/your/obsidian/vault
 ```
 
-Four integration scripts:
+Four maintenance scripts:
 
 | Script | Purpose |
 |---|---|
