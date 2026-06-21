@@ -17,7 +17,7 @@
 
 [中文文档](README.md) | [Paper](docs/paper/architecture.md) | [API](docs/api.md)
 
-**MAGMA gives your AI agent a persistent, four-dimensional memory that actually works.** MAGMA stands for **M**ulti-**A**gentic **G**raph-based **M**emory — unlike flat vector search that throws chunks at every query, MAGMA stores experience across four interconnected graphs — temporal, causal, semantic, and entity — then retrieves by *traversing relationships*, not just matching embeddings. The result: your agent remembers context, traces cause and effect, and builds a knowledge graph you can actually inspect and correct.
+**MAGMA gives your AI agent a persistent, four-dimensional memory that actually works.** MAGMA stands for **M**ulti-**G**raph based **A**gentic **M**emory **A**rchitecture — unlike flat vector search that throws chunks at every query, MAGMA stores experience across four interconnected graphs — temporal, causal, semantic, and entity — then retrieves by *traversing relationships*, not just matching embeddings. The result: your agent remembers context, traces cause and effect, and builds a knowledge graph you can actually inspect and correct.
 
 Pair it with Obsidian and you get a human-auditable memory dashboard — every inferred edge can be reviewed, confirmed, or rejected. Powered by the [MAGMA paper](https://arxiv.org/abs/2601.03236) (arXiv 2601.03236), implemented as a single `docker compose up` + MCP server that plugs into Hermes, Claude, Cursor, Cline, Windsurf, Continue, and anything else that speaks MCP.
 
