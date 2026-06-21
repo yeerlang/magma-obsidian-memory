@@ -2,7 +2,13 @@
 
 > 基于 [arXiv 2601.03236](https://arxiv.org/abs/2601.03236) 论文 Section 3.1-3.2
 
-## 三层架构总览
+## 论文原图
+
+### Figure 2: MAGMA 三层架构总览
+
+![MAGMA Architecture](assets/figure_3_0.jpeg)
+
+> 三层设计：Query Process → Data Structure → Memory Evolution。数据层维护 VectorDB + GraphDB，演化层通过 Fast/Slow Path 持续巩固记忆结构。
 
 ```
 ┌──────────────────────────────────────────────────┐
@@ -74,6 +80,12 @@ A_i  — 属性字典 (attributes)
 **代码实现**：`memory/graph_db.py` → `LinkType` / `LinkSubType` 枚举
 
 ## 四阶段查询流水线
+
+### Figure 3: 查询流水线（论文原图）
+
+![Query Pipeline](assets/figure_page_5.png)
+
+> 四阶段：Intent Classification → RRF Multi-Signal Fusion → Adaptive Beam Search → Narrative Synthesis（Linearization）
 
 ### Stage 1: 意图分类
 
