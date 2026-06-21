@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1125" width="1800" height="1125">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1500" width="2400" height="1500">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#0d1117"/>
@@ -30,10 +30,10 @@
     </marker>
   </defs>
 
-  <rect width="1800" height="1125" fill="url(#bg)"/>
-  <rect width="1800" height="1125" fill="url(#grid)"/>
+  <rect width="2400" height="1500" fill="url(#bg)"/>
+  <rect width="2400" height="1500" fill="url(#grid)"/>
 
-  <g transform="scale(1.5)">
+  <g transform="scale(2.0)">
 
     <!-- ===== 查询流程 ===== -->
     <rect x="40" y="68" width="1120" height="200" rx="12" fill="url(#g1)" stroke="#3b82f6" stroke-opacity="0.25" stroke-width="1.5"/>
