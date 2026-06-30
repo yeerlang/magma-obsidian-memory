@@ -116,7 +116,7 @@ class Link:
 
 class GraphDB:
     """
-    内存图数据库，NetworkX 实现。
+    内存图数据库。
     存储 EventNode + Link，支持四种边的 CRUD 和遍历。
     """
 
@@ -124,6 +124,7 @@ class GraphDB:
         self._nodes: Dict[str, EventNode] = {}   # node_id → EventNode
         self._edges: Dict[str, List[Link]] = {}  # node_id → 出边列表
         self._entity_nodes: Dict[str, EventNode] = {}  # entity_name → ENTITY 节点
+        self._edge_sigs: Set[Tuple[str, str, str, Optional[str]]] = set()  # O(1) 去重
 
     # ── Node operations ──────────────────────────────────────────
 
@@ -151,10 +152,21 @@ class GraphDB:
 
     # ── Edge operations ──────────────────────────────────────────
 
-    def add_edge(self, link: Link) -> None:
+    def add_edge(self, link: Link) -> bool:
+        """添加边，O(1) 去重。返回 True 表示新增，False 表示已存在（跳过）。"""
+        sig = (
+            link.source_id,
+            link.target_id,
+            link.link_type.value,
+            link.sub_type.value if link.sub_type else None,
+        )
+        if sig in self._edge_sigs:
+            return False
+        self._edge_sigs.add(sig)
         if link.source_id not in self._edges:
             self._edges[link.source_id] = []
         self._edges[link.source_id].append(link)
+        return True
 
     def get_outgoing_edges(self, node_id: str) -> List[Link]:
         return self._edges.get(node_id, [])
@@ -228,4 +240,5 @@ class GraphDB:
                 weight=edge_data.get("weight", 1.0),
                 metadata=edge_data.get("metadata", {}),
             ))
+        # add_edge 已自动重建 _edge_sigs，无需额外处理
         return db
